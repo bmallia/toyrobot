@@ -2,7 +2,8 @@ import re
 import collections 
 from toyApp.decorators import coroutine_decorator
 from toyApp.commands import ValidCommands, Directions
-
+import logging
+logger = logging.getLogger('django')
 
 def sender(filename, target):
     """
@@ -37,17 +38,21 @@ class CommandProcesser:
     def move(self):
         """ Adiciona movimento de acordo com a direção corrente """
         if self.direction == ValidCommands.SOUTH and self.coord.y < 4:
+            logger.debug(f"Movendo um unidade")
             self.coord = self.coord._replace(y=self.coord.y+1)
         elif self.direction == ValidCommands.EAST and self.coord.x < 4:
+            logger.debug(f"Movendo um unidade")
             self.coord = self.coord._replace(x=self.coord.x+1)
         
 
     def change_direction(self, direction):
         """ funão para mudar a direção """
+        logger.debug(f"mudando de direção ...")
         direct = [e for e in Directions if e.command == self.direction]
         new_direction = direct[0] + direction
         self.direction = new_direction.command
-    
+        logger.debug(f"direção alterada para {self.direction.value}")
+
     def __validate_table__(self, coord):
         """ Valida se as coordenadas estão no tabuleiro
 
@@ -63,7 +68,7 @@ class CommandProcesser:
     def report(self):
         """ O comando REPORT retorna uma string com as coordenadas e a direção corrente """
         obj = str(self)
-        print(obj)
+        logger.info(obj)
         return obj
 
 
@@ -85,21 +90,21 @@ class CommandProcesser:
 
                 if count_line == 1:
                     if self.pattern.match(line):
-                        ##print(f"Comando {line} sendo executado") ##será o debug
+                        logger.debug(f"Comando {line} sendo executado")
                         parameters = self.pattern.search(line)
                         self.place(int(parameters.group(1)), int(parameters.group(2)), ValidCommands(parameters.group(3)))
-                        ##print(f"Comando {line} executado com sucesso!") será o debug
+                        logger.debug(f"Comando {line} executado com sucesso!")
                         count_line += 1
                         continue
-                    else:                  
+                    else:
+                        logger.error("A primeira linha deve conter o comando PLACE")                  
                         raise ValueError("A primeira linha deve conter o comando PLACE")                
 
                 try:
                     ##trata os outros comandos
                     command = ValidCommands(line)
                 except ValueError as e:
-                    print(f"o Comando {line} é inválido")
-
+                    logger.error(f"O commando {line} é inválido")
 
                 if line == ValidCommands.MOVE.value:
                     self.move()
@@ -119,5 +124,4 @@ class CommandProcesser:
                     continue
 
         except GeneratorExit as e:
-            ##print(f"iteração concluída, foi lida até a linha {count_line}")
-            pass
+            logger.debug(f"iteração concluída, foi lida até a linha {count_line}")
