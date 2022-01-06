@@ -36,9 +36,9 @@ class CommandProcesser:
 
     def move(self):
         """ Adiciona movimento de acordo com a direção corrente """
-        if self.direction == ValidCommands.SOUTH:
+        if self.direction == ValidCommands.SOUTH and self.coord.y < 4:
             self.coord = self.coord._replace(y=self.coord.y+1)
-        elif self.direction == ValidCommands.EAST:
+        elif self.direction == ValidCommands.EAST and self.coord.x < 4:
             self.coord = self.coord._replace(x=self.coord.x+1)
         
 
@@ -62,7 +62,9 @@ class CommandProcesser:
 
     def report(self):
         """ O comando REPORT retorna uma string com as coordenadas e a direção corrente """
-        return str(self)
+        obj = str(self)
+        print(obj)
+        return obj
 
 
     @coroutine_decorator
@@ -83,16 +85,14 @@ class CommandProcesser:
 
                 if count_line == 1:
                     if self.pattern.match(line):
-                        print(f"Comando {line} sendo executado")
+                        ##print(f"Comando {line} sendo executado") ##será o debug
                         parameters = self.pattern.search(line)
                         self.place(int(parameters.group(1)), int(parameters.group(2)), ValidCommands(parameters.group(3)))
-                        print(f"Comando {line} executado com sucesso!")
+                        ##print(f"Comando {line} executado com sucesso!") será o debug
                         count_line += 1
                         continue
-                    else:
-                        print("A primeira linha deve conter o comando PLACE")
-                        ##criar nova excecao                    
-                        raise GeneratorExit("A primeira linha deve conter o comando PLACE")                
+                    else:                  
+                        raise ValueError("A primeira linha deve conter o comando PLACE")                
 
                 try:
                     ##trata os outros comandos
@@ -111,6 +111,13 @@ class CommandProcesser:
                 if len(direction_found) != 0:
                     self.change_direction(direction_found[0])
                     count_line += 1
+                    continue
                 
+                if line == ValidCommands.REPORT.value:
+                    self.report()
+                    count_line += 1
+                    continue
+
         except GeneratorExit as e:
-            print(f"iteração concluída, foi lida até a linha {count_line}")
+            ##print(f"iteração concluída, foi lida até a linha {count_line}")
+            pass

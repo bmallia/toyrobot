@@ -2,9 +2,9 @@ import os
 import time 
 
 from django.core.management.base import BaseCommand
-from toyApp.processer import validation_commands
+from toyApp.processer import CommandProcesser, sender
 
-class CommandProcesser(BaseCommand):
+class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('filepath', type=str, help="O Caminho do arquivo com a lista de comandos a serem processados")
@@ -12,6 +12,10 @@ class CommandProcesser(BaseCommand):
     def handle(self, *args, **kwargs):
         
         filepath = kwargs['filepath']
-        validation_commands(['PLACE', 'LEFT', 'RIGHT']) 
+        
+        p = CommandProcesser()
+        v = p.validate_commands()
+        sender(filepath, v)
+        
         
         
