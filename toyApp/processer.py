@@ -1,7 +1,7 @@
 import re
-
+import collections 
 from toyApp.decorators import coroutine_decorator
-from toyApp.commands import ValidCommands
+from toyApp.commands import ValidCommands, Directions
 
 
 def sender(filename, target):
@@ -15,11 +15,7 @@ def sender(filename, target):
     """     
     for line in open(filename):
         t = target.send(line)
-        ##target.__next__()
     target.close()
-    
-
-
     
 
 class CommandProcesser:
@@ -29,16 +25,28 @@ class CommandProcesser:
     pattern = re.compile("PLACE (\d),(\d),(EAST|SOUTH|NORTH|WEST)")
 
     def __init__(self):
-        self.coord = (0,0)
+        coordenate = collections.namedtuple("Coordenadas", "x y")
+        self.coord = coordenate(0,0)
         self.direction = None
 
     def place(self, x, y, direction):
-        self.coord = (x, y)
+        self.coord = self.coord._replace(x=x)
+        self.coord = self.coord._replace(y=y)
         self.direction = direction
 
     def move(self):
         """ Adiciona movimento de acordo com a direção corrente """
-        pass
+        if self.direction == ValidCommands.SOUTH:
+            self.coord = self.coord._replace(y=self.coord.y+1)
+        elif self.direction == ValidCommands.EAST:
+            self.coord = self.coord._replace(x=self.coord.x+1)
+        
+
+    def change_direction(self, direction):
+        """ funão para mudar a direção """
+        direct = [e for e in Directions if e.command == self.direction]
+        new_direction = direct[0] + direction
+        self.direction = new_direction.command
     
     def __validate_table__(self, coord):
         """ Valida se as coordenadas estão no tabuleiro
@@ -50,7 +58,12 @@ class CommandProcesser:
 
     def __str__(self):
         """ """
-        return f"{self.coord[0]},{self.coord[1]} {self.direction}"
+        return f"{self.coord[0]},{self.coord[1]},{self.direction.name}"
+
+    def report(self):
+        """ O comando REPORT retorna uma string com as coordenadas e a direção corrente """
+        return str(self)
+
 
     @coroutine_decorator
     def validate_commands(self):
@@ -66,24 +79,38 @@ class CommandProcesser:
         try:
             while True:
                 line = yield
+                line = line.replace('\n', '')
+
                 if count_line == 1:
                     if self.pattern.match(line):
                         print(f"Comando {line} sendo executado")
                         parameters = self.pattern.search(line)
-                        self.place(int(parameters.group(1)), int(parameters.group(2)), parameters.group(3))
+                        self.place(int(parameters.group(1)), int(parameters.group(2)), ValidCommands(parameters.group(3)))
                         print(f"Comando {line} executado com sucesso!")
+                        count_line += 1
+                        continue
                     else:
-                        print("A primeira linha deve conter o comando PLACE")                    
+                        print("A primeira linha deve conter o comando PLACE")
+                        ##criar nova excecao                    
                         raise GeneratorExit("A primeira linha deve conter o comando PLACE")                
 
-
-                ##trata os outros comandos
-                command_found_list = [e.value for e in ValidCommands if e.value in line]
-                if len(command_found_list) == 0:
+                try:
+                    ##trata os outros comandos
+                    command = ValidCommands(line)
+                except ValueError as e:
                     print(f"o Comando {line} é inválido")
 
-                count_line += 1
 
-
+                if line == ValidCommands.MOVE.value:
+                    self.move()
+                    count_line += 1
+                    continue
+                
+                
+                direction_found = [e for e in Directions if e.command == command]       
+                if len(direction_found) != 0:
+                    self.change_direction(direction_found[0])
+                    count_line += 1
+                
         except GeneratorExit as e:
             print(f"iteração concluída, foi lida até a linha {count_line}")
