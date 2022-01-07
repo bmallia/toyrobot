@@ -2,6 +2,8 @@ import re
 import collections 
 from toyApp.decorators import coroutine_decorator
 from toyApp.commands import ValidCommands, Directions
+from toyApp.errors import FirstParameterError
+
 import logging
 logger = logging.getLogger('django')
 
@@ -18,6 +20,12 @@ def sender(filename, target):
         t = target.send(line)
     target.close()
     
+
+def sender_array(array, target):
+
+    for line in array:
+        t = target.send(line)
+    target.close()
 
 class CommandProcesser:
 
@@ -98,7 +106,7 @@ class CommandProcesser:
                         continue
                     else:
                         logger.error("A primeira linha deve conter o comando PLACE")                  
-                        raise ValueError("A primeira linha deve conter o comando PLACE")                
+                        raise FirstParameterError("A primeira linha deve conter o comando PLACE")                
 
                 try:
                     ##trata os outros comandos

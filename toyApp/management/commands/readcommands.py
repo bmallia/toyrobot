@@ -3,6 +3,7 @@ import time
 
 from django.core.management.base import BaseCommand
 from toyApp.processer import CommandProcesser, sender
+from toyApp.errors import FirstParameterError
 
 class Command(BaseCommand):
 
@@ -12,10 +13,12 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         
         filepath = kwargs['filepath']
-        
-        p = CommandProcesser()
-        v = p.validate_commands()
-        sender(filepath, v)
+        try:
+            p = CommandProcesser()
+            v = p.validate_commands()
+            sender(filepath, v)
+        except FirstParameterError as e:
+            pass
         
         
         
