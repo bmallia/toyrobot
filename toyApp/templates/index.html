@@ -1,0 +1,131 @@
+{% load static %}
+
+<html>
+    <head>
+        <title>
+            Jogo do robô
+        </title>    
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+    </head>
+    <style>
+        canvas {
+            border: solid
+        }
+
+        textarea {
+            padding: 10px;
+            max-width: 100%;
+            line-height: 1.5;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-shadow: 1px 1px 1px #999;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .text-area {
+            width: 100%;
+            border: 1px solid #ccc
+        }
+
+    </style>
+    <body>
+        
+        <form id="form">
+            {% csrf_token %}
+            <div style="text-area">
+                <label for="commandstext">Digite os comandos que irá posicionar o robô no tabuleiro e pressione o botão Processar: </label>
+
+                <textarea id="commandstext" name="commandstext" rows="5" cols="70"></textarea>
+            </div>
+            <button type="button"  value="Processar" onclick="processcomands();" style="padding:10px; margin:5px;">Processar</button>   
+        </form>
+
+        <br><br>
+        <canvas width="500" height="500"></canvas>
+        <label id="loc_label"><label>
+
+        <script>
+            var cnv = document.querySelector('canvas');
+            var context = cnv.getContext("2d");
+            var img = new Image();
+
+            img.src = "{% static "/images/ai.png" %}";
+    
+            render()
+            
+            function build_board(){
+                 //constroí o tabuleiro
+                 for (let col = 100; col <= 400; col+=100) {
+                    context.beginPath();
+                    context.moveTo(col,0);
+                    context.lineTo(col,500);
+                    context.stroke();
+
+                }
+
+
+                for (let row = 100; row <= 400; row+=100) {
+                    context.beginPath();
+                    context.moveTo(0,row);
+                    context.lineTo(500,row);
+                    context.stroke();
+                }
+
+             
+                
+            }
+
+            function render() {
+
+                img.onload = () => {
+                    //posiciona a imagem
+                    context.drawImage(img, 10,10);
+                    context.beginPath();
+                    context.moveTo(100,0);
+                    context.lineTo(100,500);
+                    context.stroke();
+                    
+                    build_board()
+                   
+                    
+                }
+
+
+            }
+
+            function processcomands() {
+                let data = new FormData(); 
+    
+                data.append("commands", document.getElementById('commandstext').value)  
+                data.append("csrfmiddlewaretoken", '{{csrf_token}}')
+
+                axios.post('processcommands/', data) 
+                .then(
+                    res => {
+                        if (res.data.error) {
+                             alert(res.data.error)   
+                        } else {
+                            context.clearRect(0, 0, cnv.width, cnv.height);
+                            build_board()
+                            let commands = res.data.split(',')
+                            let x = (parseInt(commands[0]) * 100) + 20
+                            let y = (parseInt(commands[1]) * 100) + 20
+                            context.drawImage(img, x, y)
+                            document.getElementById('loc_label').innerHTML = "Coordenadas: " + res.data
+                        };
+
+                    }    
+                ).catch(errors => console.log(errors))
+               
+            }
+
+
+   
+        </script>
+        
+    </body>
+</html>
