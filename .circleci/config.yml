@@ -18,8 +18,9 @@ jobs:
       - image: "circleci/python:3.10-node-browsers-legacy"
     steps:
       - run:
-        name: run testes
+        name: run_testes
         command: | 
+          python3 -m venv venv
           . venv/bin/activate
           pytest -v --cov=toyrobo
 
