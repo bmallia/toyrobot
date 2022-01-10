@@ -20,8 +20,6 @@ jobs:
       - run:
         name: run_testes
         command: | 
-          python3 -m venv venv
-          . venv/bin/activate
           pytest -v --cov=toyrobo
 
 workflows:
