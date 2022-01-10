@@ -5,27 +5,17 @@ jobs:
     docker:
       - image: "circleci/python:3.10-node-browsers-legacy"
     steps:
-      - run: 
-          name: install_dependencies
-          command: |
-            python3 -m venv venv
-            . venv/bin/activate
-            pip install -r requirements.txt
+      - checkout 
+      - run: echo "this is the build job"
+          
   test:
     docker:
       - image: "circleci/python:3.10-node-browsers-legacy"
     steps:
-      - run: 
-        name: run testes
-        command: |
-            . venv/bin/activate
-            pytest -v --cov=toyrobo
-
+      - run: echo "this is the test job"  
 
 workflows:
   build_and_test:
     jobs:
       - build
-      - test:
-          requires:
-            - build
+      - test
