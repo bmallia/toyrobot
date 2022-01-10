@@ -17,7 +17,11 @@ jobs:
     docker:
       - image: "circleci/python:3.10-node-browsers-legacy"
     steps:
-      - run: echo "this is the test job"  
+      - run:
+        name: run testes
+        command: | 
+          . venv/bin/activate
+          pytest -v --cov=toyrobo
 
 workflows:
   build_and_test:
