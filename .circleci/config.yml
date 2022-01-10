@@ -5,7 +5,6 @@ jobs:
     docker:
       - image: "circleci/python:3.10-node-browsers-legacy"
     steps:
-      - checkout
       - run: 
           name: install_dependencies
           command: |
@@ -16,7 +15,6 @@ jobs:
     docker:
       - image: "circleci/python:3.10-node-browsers-legacy"
     steps:
-      - checkout
       - run: 
         name: run testes
         command: |
