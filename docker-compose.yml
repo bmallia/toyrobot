@@ -5,6 +5,7 @@ services:
   web:
     build: .
     command: python manage.py runserver 0.0.0.0:8080
+    container_name: toyrobo
     volumes:
       - data:/data/db
     ports:
