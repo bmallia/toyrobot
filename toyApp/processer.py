@@ -1,7 +1,7 @@
 import re
 import collections 
 from toyApp.decorators import coroutine_decorator
-from toyApp.commands import ValidCommands, Directions
+from toyApp.commands import ValidCommands, Directions, DataCommand, Side
 from toyApp.errors import FirstParameterError
 
 import logging
@@ -45,13 +45,19 @@ class CommandProcesser:
 
     def move(self):
         """ Adiciona movimento de acordo com a direção corrente """
-        if self.direction == ValidCommands.SOUTH and self.coord.y < 4:
+        if self.coord.x > 5 and self.coord.x < 0 and self.coord.y > 5 and self.coord.y < 0:
+            return
+
+        if self.direction.name == ValidCommands.SOUTH.name:
             logger.debug(f"Movendo um unidade")
             self.coord = self.coord._replace(y=self.coord.y+1)
-        elif self.direction == ValidCommands.EAST and self.coord.x < 4:
+        elif self.direction.name == ValidCommands.EAST.name:
             logger.debug(f"Movendo um unidade")
             self.coord = self.coord._replace(x=self.coord.x+1)
-        
+        elif self.direction.name == ValidCommands.WEST.name:
+            self.coord = self.coord._replace(x=self.coord.x-1)
+        elif self.direction.name == ValidCommands.NORTH.name:
+            self.coord = self.coord._replace(y=self.coord.y-1)
 
     def change_direction(self, direction):
         """ funão para mudar a direção """
@@ -109,7 +115,6 @@ class CommandProcesser:
                         raise FirstParameterError("A primeira linha deve conter o comando PLACE")                
 
                 try:
-                    ##trata os outros comandos
                     command = ValidCommands(line)
                 except ValueError as e:
                     logger.error(f"O commando {line} é inválido")
@@ -119,13 +124,19 @@ class CommandProcesser:
                     count_line += 1
                     continue
                 
+                curr_angle = [d for d in Directions if d.direction.name == self.direction.name]
+                current_command = DataCommand(curr_angle[0].angle , self.direction)
                 
-                direction_found = [e for e in Directions if e.command == command]       
-                if len(direction_found) != 0:
-                    self.change_direction(direction_found[0])
+                if line == "RIGHT":
+                    new_command = current_command + DataCommand(90, Side.RIGHT)
+                    self.direction = new_command.direction
                     count_line += 1
-                    continue
                 
+                if line == "LEFT":
+                    new_command = current_command + DataCommand(-90, Side.LEFT)
+                    self.direction = new_command.direction
+                    count_line += 1
+
                 if line == ValidCommands.REPORT.value:
                     self.report()
                     count_line += 1
