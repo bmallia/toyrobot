@@ -45,18 +45,15 @@ class CommandProcesser:
 
     def move(self):
         """ Adiciona movimento de acordo com a direção corrente """
-        if self.coord.x > 5 and self.coord.x < 0 and self.coord.y > 5 and self.coord.y < 0:
-            return
-
-        if self.direction.name == ValidCommands.SOUTH.name:
+        if self.direction.name == ValidCommands.SOUTH.name and self.coord.y >= 0  and self.coord.y < 5:
             logger.debug(f"Movendo um unidade")
             self.coord = self.coord._replace(y=self.coord.y+1)
-        elif self.direction.name == ValidCommands.EAST.name:
+        elif self.direction.name == ValidCommands.EAST.name and self.coord.x >= 0 and self.coord.x < 5:
             logger.debug(f"Movendo um unidade")
             self.coord = self.coord._replace(x=self.coord.x+1)
-        elif self.direction.name == ValidCommands.WEST.name:
+        elif self.direction.name == ValidCommands.WEST.name and self.coord.x > 0 and self.coord.x < 5:
             self.coord = self.coord._replace(x=self.coord.x-1)
-        elif self.direction.name == ValidCommands.NORTH.name:
+        elif self.direction.name == ValidCommands.NORTH.name and self.coord.y > 0 and self.coord.y < 5:
             self.coord = self.coord._replace(y=self.coord.y-1)
 
     def change_direction(self, direction):
