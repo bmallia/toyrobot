@@ -124,15 +124,17 @@ class CommandProcesser:
                 curr_angle = [d for d in Directions if d.direction.name == self.direction.name]
                 current_command = DataCommand(curr_angle[0].angle , self.direction)
                 
-                if line == "RIGHT":
+                if line == ValidCommands.RIGHT.name:
                     new_command = current_command + DataCommand(90, Side.RIGHT)
                     self.direction = new_command.direction
                     count_line += 1
+                    continue
                 
-                if line == "LEFT":
+                if line == ValidCommands.LEFT.name:
                     new_command = current_command + DataCommand(-90, Side.LEFT)
                     self.direction = new_command.direction
                     count_line += 1
+                    continue
 
                 if line == ValidCommands.REPORT.value:
                     self.report()
